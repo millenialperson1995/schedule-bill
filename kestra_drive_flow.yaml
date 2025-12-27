@@ -27,6 +27,12 @@ tasks:
     type: io.kestra.plugin.core.flow.ForEach
     values: "{{ outputs.list_files.files }}"
     tasks:
+    tasks:
+      - id: download_file
+        type: io.kestra.plugin.googleworkspace.drive.Download
+        serviceAccount: "{{ vars.gcp_creds }}"
+        fileId: "{{ taskrun.value.id }}"
+
       - id: working_directory
         type: io.kestra.plugin.core.flow.WorkingDirectory
         tasks:
@@ -35,11 +41,6 @@ tasks:
             url: https://github.com/millenialperson1995/schedule-bill.git
             branch: master
             
-          - id: download_file
-            type: io.kestra.plugin.googleworkspace.drive.Download
-            serviceAccount: "{{ vars.gcp_creds }}"
-            fileId: "{{ taskrun.value.id }}"
-
           - id: run_python_processor
             type: io.kestra.plugin.scripts.python.Commands
             inputFiles:
@@ -53,19 +54,19 @@ tasks:
               - pip install -r requirements.txt
               - python process_boletos.py
 
-          - id: upload_to_processed
-            type: io.kestra.plugin.googleworkspace.drive.Upload
-            serviceAccount: "{{ vars.gcp_creds }}"
-            from: "{{ outputs.download_file.uri }}"
-            parents: 
-              - "{{ vars.processed_folder_id }}"
-            name: "{{ taskrun.value.name }}"
-            contentType: "application/pdf"
+      - id: upload_to_processed
+        type: io.kestra.plugin.googleworkspace.drive.Upload
+        serviceAccount: "{{ vars.gcp_creds }}"
+        from: "{{ outputs.download_file.uri }}"
+        parents: 
+          - "{{ vars.processed_folder_id }}"
+        name: "{{ taskrun.value.name }}"
+        contentType: "application/pdf"
 
-          - id: delete_from_input
-            type: io.kestra.plugin.googleworkspace.drive.Delete
-            serviceAccount: "{{ vars.gcp_creds }}"
-            fileId: "{{ taskrun.value.id }}"
+      - id: delete_from_input
+        type: io.kestra.plugin.googleworkspace.drive.Delete
+        serviceAccount: "{{ vars.gcp_creds }}"
+        fileId: "{{ taskrun.value.id }}"
 
 # Executa a cada 1 minuto
 triggers:
