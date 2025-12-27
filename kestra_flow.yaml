@@ -17,8 +17,6 @@ tasks:
 
       - id: process_boletos
         type: io.kestra.plugin.scripts.python.Commands
-      - id: process_boletos
-        type: io.kestra.plugin.scripts.python.Commands
         env:
           # Se não conseguir usar Secrets, coloque os valores aqui (Cuidado: ficarão visíveis no arquivo)
           DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
