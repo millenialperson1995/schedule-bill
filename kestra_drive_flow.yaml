@@ -7,14 +7,13 @@ variables:
   processed_folder_id: "1Hg3qZRuTw88jLlrIJm-8YaK_zgu3qtQk"
 
   # Credenciais do Google (Service Account)
-  # IMPORTANTE: Copie o JSON da sua chave e cole aqui ou use Secrets do Kestra
-  # Para enviar ao GitHub, não podemos deixar a chave real aqui exposa.
+  # IMPORTANTE: Use o arquivo CONFIG_KESTRA_LOCAL.txt para pegar a chave real
   gcp_creds: |
     {
       "type": "service_account",
-      "project_id": "SEU_PROJECT_ID",
-      "private_key": "SUA_PRIVATE_KEY_AQUI",
-      "client_email": "SEU_EMAIL_AQUI"
+      "project_id": "PLACEHOLDER",
+      "private_key": "PLACEHOLDER",
+      "client_email": "PLACEHOLDER"
     }
 
 tasks:
@@ -27,11 +26,10 @@ tasks:
     type: io.kestra.plugin.core.flow.ForEach
     values: "{{ outputs.list_files.files }}"
     tasks:
-    tasks:
       - id: download_file
         type: io.kestra.plugin.googleworkspace.drive.Download
         serviceAccount: "{{ vars.gcp_creds }}"
-        fileId: "{{ taskrun.value.id }}"
+        fileId: "{{ fromJson(taskrun.value).id }}"
 
       - id: working_directory
         type: io.kestra.plugin.core.flow.WorkingDirectory
@@ -44,12 +42,12 @@ tasks:
           - id: run_python_processor
             type: io.kestra.plugin.scripts.python.Commands
             inputFiles:
-              "input_boletos/{{ taskrun.value.name }}": "{{ outputs.download_file.uri }}"
+              "input_boletos/{{ fromJson(taskrun.value).name }}": "{{ parent.outputs.download_file.uri }}"
             env:
-              DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
+              DEEPSEEK_API_KEY: "PLACEHOLDER"
               MONGODB_URI: "mongodb://admin:admin@host.docker.internal:27017/"
-              TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
-              TELEGRAM_CHAT_ID: "1793948672"
+              TELEGRAM_BOT_TOKEN: "PLACEHOLDER"
+              TELEGRAM_CHAT_ID: "PLACEHOLDER"
             commands:
               - pip install -r requirements.txt
               - python process_boletos.py
@@ -60,13 +58,13 @@ tasks:
         from: "{{ outputs.download_file.uri }}"
         parents: 
           - "{{ vars.processed_folder_id }}"
-        name: "{{ taskrun.value.name }}"
+        name: "{{ fromJson(taskrun.value).name }}"
         contentType: "application/pdf"
 
       - id: delete_from_input
         type: io.kestra.plugin.googleworkspace.drive.Delete
         serviceAccount: "{{ vars.gcp_creds }}"
-        fileId: "{{ taskrun.value.id }}"
+        fileId: "{{ fromJson(taskrun.value).id }}"
 
 # Executa a cada 1 minuto
 triggers:
