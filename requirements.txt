@@ -1,0 +1,9 @@
+PyPDF2
+pymongo
+openai
+python-dotenv
+python-dotenv
+pydantic
+requests
+numpy
+schedule
