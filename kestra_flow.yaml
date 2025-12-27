@@ -10,11 +10,6 @@ tasks:
         url: https://github.com/millenialperson1995/schedule-bill.git
         branch: master
 
-      - id: install_dependencies
-        type: io.kestra.plugin.scripts.python.Commands
-        commands:
-          - pip install -r requirements.txt
-
       - id: process_boletos
         type: io.kestra.plugin.scripts.python.Commands
         env:
@@ -24,6 +19,7 @@ tasks:
           TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
           TELEGRAM_CHAT_ID: "1793948672"
         commands:
+          - pip install -r requirements.txt
           - python process_boletos.py
 
 # Triggers (Schedules)
