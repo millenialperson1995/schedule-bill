@@ -1,0 +1,74 @@
+id: boleto_drive_automation
+namespace: finance.automation
+
+variables:
+  # ID da pasta de INPUT e PROCESSED
+  drive_folder_id: "1XwbNQq8m3IuGTmPdMKMHGP2DpDtd0uc9"
+  processed_folder_id: "1Hg3qZRuTw88jLlrIJm-8YaK_zgu3qtQk"
+
+  # Credenciais do Google (Service Account)
+  # IMPORTANTE: Copie o JSON da sua chave e cole aqui ou use Secrets do Kestra
+  # Para enviar ao GitHub, não podemos deixar a chave real aqui exposa.
+  gcp_creds: |
+    {
+      "type": "service_account",
+      "project_id": "SEU_PROJECT_ID",
+      "private_key": "SUA_PRIVATE_KEY_AQUI",
+      "client_email": "SEU_EMAIL_AQUI"
+    }
+
+tasks:
+  - id: list_files
+    type: io.kestra.plugin.googleworkspace.drive.List
+    serviceAccount: "{{ vars.gcp_creds }}"
+    query: "'{{ vars.drive_folder_id }}' in parents and trashed = false"
+
+  - id: process_each_file
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.list_files.files }}"
+    tasks:
+      - id: working_directory
+        type: io.kestra.plugin.core.flow.WorkingDirectory
+        tasks:
+          - id: clone_repo
+            type: io.kestra.plugin.git.Clone
+            url: https://github.com/millenialperson1995/schedule-bill.git
+            branch: master
+            
+          - id: download_file
+            type: io.kestra.plugin.googleworkspace.drive.Download
+            serviceAccount: "{{ vars.gcp_creds }}"
+            fileId: "{{ taskrun.value.id }}"
+
+          - id: run_python_processor
+            type: io.kestra.plugin.scripts.python.Commands
+            inputFiles:
+              "input_boletos/{{ taskrun.value.name }}": "{{ outputs.download_file.uri }}"
+            env:
+              DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
+              MONGODB_URI: "mongodb://admin:admin@host.docker.internal:27017/"
+              TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
+              TELEGRAM_CHAT_ID: "1793948672"
+            commands:
+              - pip install -r requirements.txt
+              - python process_boletos.py
+
+          - id: upload_to_processed
+            type: io.kestra.plugin.googleworkspace.drive.Upload
+            serviceAccount: "{{ vars.gcp_creds }}"
+            from: "{{ outputs.download_file.uri }}"
+            parents: 
+              - "{{ vars.processed_folder_id }}"
+            name: "{{ taskrun.value.name }}"
+            contentType: "application/pdf"
+
+          - id: delete_from_input
+            type: io.kestra.plugin.googleworkspace.drive.Delete
+            serviceAccount: "{{ vars.gcp_creds }}"
+            fileId: "{{ taskrun.value.id }}"
+
+# Executa a cada 1 hora
+triggers:
+  - id: schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"
