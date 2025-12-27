@@ -22,6 +22,17 @@ tasks:
           - pip install -r requirements.txt
           - python process_boletos.py
 
+      - id: check_deadlines
+        type: io.kestra.plugin.scripts.python.Commands
+        env:
+          DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
+          MONGODB_URI: "mongodb://admin:admin@127.0.0.1:27017/"
+          TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
+          TELEGRAM_CHAT_ID: "1793948672"
+        commands:
+          - pip install -r requirements.txt
+          - python check_deadlines.py
+
 # Triggers (Schedules)
 triggers:
   - id: schedule_process
