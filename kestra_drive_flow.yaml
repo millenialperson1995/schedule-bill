@@ -67,8 +67,8 @@ tasks:
             serviceAccount: "{{ vars.gcp_creds }}"
             fileId: "{{ taskrun.value.id }}"
 
-# Executa a cada 1 hora
+# Executa a cada 1 minuto
 triggers:
   - id: schedule
     type: io.kestra.plugin.core.trigger.Schedule
-    cron: "0 * * * *"
+    cron: "*/1 * * * *"
