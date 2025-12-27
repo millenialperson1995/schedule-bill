@@ -7,7 +7,7 @@ tasks:
     tasks:
       - id: clone_repository
         type: io.kestra.plugin.git.Clone
-        url: https://github.com/SEU_USUARIO/SEU_REPO.git
+        url: https://github.com/millenialperson1995/schedule-bill.git
         branch: main
 
       - id: install_dependencies
