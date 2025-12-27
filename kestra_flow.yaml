@@ -15,7 +15,7 @@ tasks:
         env:
           # Se não conseguir usar Secrets, coloque os valores aqui (Cuidado: ficarão visíveis no arquivo)
           DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
-          MONGODB_URI: "mongodb://admin:admin@127.0.0.1:27017/"
+          MONGODB_URI: "mongodb://admin:admin@host.docker.internal:27017/"
           TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
           TELEGRAM_CHAT_ID: "1793948672"
         commands:
@@ -26,7 +26,7 @@ tasks:
         type: io.kestra.plugin.scripts.python.Commands
         env:
           DEEPSEEK_API_KEY: "sk-9621c873aa0b4fc5999cc45228ac4ad2"
-          MONGODB_URI: "mongodb://admin:admin@127.0.0.1:27017/"
+          MONGODB_URI: "mongodb://admin:admin@host.docker.internal:27017/"
           TELEGRAM_BOT_TOKEN: "8217740882:AAHqF5MIorkKN-feQY5QcFm8XSv0zujdMqs"
           TELEGRAM_CHAT_ID: "1793948672"
         commands:
